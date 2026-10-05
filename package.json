@@ -1,0 +1,24 @@
+{
+  "name": "declutter-mansion",
+  "version": "1.0.0",
+  "description": "Declutter Mansion - a spooky-cozy vacuum adventure PWA",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview --host",
+    "icons": "node scripts/make-icons.mjs",
+    "build:artifact": "vite build --mode artifact --outDir dist-artifact && node scripts/make-artifact.mjs",
+    "deploy": "node scripts/deploy-pages.mjs"
+  },
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@fontsource/creepster": "^5.3.0",
+    "@fontsource/fredoka": "^5.3.0",
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "vite": "^8.3.2",
+    "vite-plugin-pwa": "^1.3.0"
+  }
+}

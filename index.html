@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#1b1030" />
+  <meta name="description" content="Suck up living clutter in a spooky-cozy mansion with your trusty Clutter-Vac 3000." />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="icon" type="image/png" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <title>Declutter Mansion</title>
+</head>
+<body>
+  <div id="app">
+    <canvas id="gl"></canvas>
+    <div id="vignette"></div>
+    <div id="hurt"></div>
+    <div id="flash"></div>
+    <div id="labels"></div>
+
+    <!-- In-game HUD -->
+    <div id="hud" class="hidden">
+      <div class="hud-tl">
+        <div class="hp"><div class="hp-heart"><span id="hp-num">100</span></div><div class="hp-bar"><i id="hp-fill"></i></div></div>
+        <div class="money"><span class="coin-ico"></span><span id="money">0</span></div>
+      </div>
+      <div class="hud-tr">
+        <div id="keys"></div>
+        <button class="hud-btn" id="btn-map" aria-label="Map">🗺️</button>
+        <button class="hud-btn" id="btn-pause" aria-label="Pause">⏸</button>
+      </div>
+      <div id="room-name"></div>
+      <div id="boss-bar" class="hidden"><div class="boss-label">THE HOARD KING</div><div class="boss-track"><i id="boss-fill"></i></div></div>
+      <div id="tug" class="hidden">
+        <div class="tug-name" id="tug-name"></div>
+        <div class="tug-row"><div class="tug-hp" id="tug-hp">0</div><div class="tug-power"><i id="tug-power"></i><span id="tug-slam">SLAM!</span></div></div>
+        <div class="tug-hint" id="tug-hint">Pull AWAY from where it runs!</div>
+      </div>
+      <div id="prompt" class="hidden"></div>
+      <div id="tip" class="hidden"></div>
+      <div id="banner" class="hidden"></div>
+      <div id="flash-cd"><i></i></div>
+    </div>
+
+    <!-- Touch controls -->
+    <div id="touch" class="hidden">
+      <div class="stick" id="stick-l"><div class="knob"></div></div>
+      <div class="stick stick-r" id="stick-r"><div class="knob"></div><span>VAC</span></div>
+      <button class="tbtn" id="t-flash">FLASH</button>
+      <button class="tbtn small hidden" id="t-use">USE</button>
+    </div>
+
+    <!-- Dialog -->
+    <div id="dialog" class="hidden">
+      <div class="dlg-portrait" id="dlg-portrait"></div>
+      <div class="dlg-body"><div class="dlg-name" id="dlg-name"></div><div class="dlg-text" id="dlg-text"></div><div class="dlg-next">▼</div></div>
+    </div>
+
+    <!-- Map -->
+    <div id="map" class="hidden screen">
+      <div class="map-card">
+        <h2>Mansion Map</h2>
+        <div id="map-grid"></div>
+        <div class="map-legend"><span class="lg cleared"></span>Clean <span class="lg visited"></span>Messy <span class="lg unknown"></span>Unexplored</div>
+        <button class="btn" id="map-close">Close</button>
+      </div>
+    </div>
+
+    <!-- Title -->
+    <div id="title" class="screen">
+      <div class="logo">
+        <div class="logo-top">Declutter</div>
+        <div class="logo-bot">Mansion</div>
+        <div class="logo-sub">A spooky-cozy vacuum adventure</div>
+      </div>
+      <div class="menu">
+        <button class="btn primary" id="btn-new">New Game</button>
+        <button class="btn hidden" id="btn-continue">Continue</button>
+        <button class="btn hidden" id="btn-install">Install App</button>
+        <button class="btn ghost" id="btn-howto">How to Play</button>
+      </div>
+      <div class="title-foot">Best with sound on 🔊 · Keyboard, mouse, gamepad &amp; touch</div>
+    </div>
+
+    <!-- How to play -->
+    <div id="howto" class="hidden screen">
+      <div class="card">
+        <h2>How to Play</h2>
+        <div class="howto-grid">
+          <div><b>Move</b><span>WASD / Arrows · Left stick · Left thumb</span></div>
+          <div><b>Aim</b><span>Mouse · Right stick · Right thumb</span></div>
+          <div><b>Vacuum</b><span>Hold Left Click / Space · RT · Hold right thumb stick</span></div>
+          <div><b>Flash</b><span>Right Click / F / Shift · LT or RB · FLASH button</span></div>
+          <div><b>Search / Use</b><span>E · A button · USE button</span></div>
+          <div><b>Map / Pause</b><span>M / Esc · Back / Start · 🗺️ ⏸ buttons</span></div>
+        </div>
+        <ol class="howto-steps">
+          <li><b>Flash</b> living clutter to stun it (tiny dust bunnies don't need it).</li>
+          <li><b>Vacuum</b> it while stunned to latch on.</li>
+          <li><b>Pull away</b> from the direction it runs to drain its Mess Meter faster.</li>
+          <li>Fill the power meter, then press <b>Flash</b> to <b>SLAM</b> it!</li>
+          <li>Clear every room to turn on the lights and earn keys.</li>
+        </ol>
+        <button class="btn primary" id="howto-close">Got it!</button>
+      </div>
+    </div>
+
+    <!-- Pause -->
+    <div id="pause" class="hidden screen">
+      <div class="card">
+        <h2>Paused</h2>
+        <label class="slider">Music <input type="range" id="vol-music" min="0" max="1" step="0.05" /></label>
+        <label class="slider">Sound FX <input type="range" id="vol-sfx" min="0" max="1" step="0.05" /></label>
+        <label class="toggle"><input type="checkbox" id="opt-quality" /> High quality (shadows, sharper)</label>
+        <label class="toggle"><input type="checkbox" id="opt-touch" /> Touch controls</label>
+        <div class="menu">
+          <button class="btn primary" id="btn-resume">Resume</button>
+          <button class="btn" id="btn-howto2">How to Play</button>
+          <button class="btn ghost" id="btn-quit">Save &amp; Quit to Title</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Game over -->
+    <div id="gameover" class="hidden screen">
+      <div class="card center">
+        <h2 class="big">Buried in Clutter!</h2>
+        <p>Pip got overwhelmed... but a good tidy-up never quits.</p>
+        <button class="btn primary" id="btn-retry">Try Again</button>
+      </div>
+    </div>
+
+    <!-- Ending -->
+    <div id="ending" class="hidden screen">
+      <div class="card center">
+        <div class="logo small"><div class="logo-top">Spotless!</div></div>
+        <p>The Hoard King is vacuumed up and Declutter Mansion sparkles once more.</p>
+        <div id="stats"></div>
+        <div class="rank-wrap">Rank <div id="rank">A</div></div>
+        <button class="btn primary" id="btn-again">Play Again</button>
+      </div>
+    </div>
+
+    <div id="fade"></div>
+    <div id="toast" class="hidden"></div>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
